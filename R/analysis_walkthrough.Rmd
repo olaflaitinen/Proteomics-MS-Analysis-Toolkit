@@ -1,0 +1,59 @@
+---
+title: "Proteomics Analysis Walkthrough"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## 1. Setup and Data Loading
+
+Load libraries and helper functions.
+
+```{r load-libs}
+library(tidyverse)
+library(limma)
+library(ggplot2)
+library(ggrepel)
+library(pheatmap)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+
+source("functions/analysis_functions.R")
+source("functions/plotting_functions.R")
+```
+
+Load and preprocess the MaxQuant data.
+
+```{r load-data}
+protein_groups_file <- "../data/proteinGroups.txt"
+metadata_file <- "../data/metadata.csv"
+
+processed_data <- load_and_preprocess_maxquant(protein_groups_file, metadata_file)
+```
+
+## 2. Differential Abundance with limma
+
+We use the `limma` package to perform a robust statistical test.
+
+```{r limma}
+de_results <- run_limma_analysis(processed_data, metadata_file)
+head(de_results)
+```
+
+## 3. Visualization: Volcano Plot
+
+```{r volcano-plot}
+plot_volcano_r(de_results)
+```
+
+## 4. Functional Enrichment Analysis
+
+Perform Over-Representation Analysis (ORA) on significantly upregulated proteins.
+
+```{r enrichment}
+enrichment_results <- run_ora_enrichment(de_results)
+dotplot(enrichment_results)
+```
